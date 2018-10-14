@@ -94,7 +94,7 @@
 				fclose($fp);
 			}			
 		}	
-		if ((count($_POST['snippets'])) && (isset($_POST['snippets'])))
+		if ((isset($_POST['snippets'])) && (count($_POST['snippets'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -123,7 +123,7 @@
 				fclose($fp);
 			}			
 		}		
-		if ((count($_POST['tvs'])) && (isset($_POST['tvs'])))
+		if ((isset($_POST['tvs'])) && (count($_POST['tvs'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
