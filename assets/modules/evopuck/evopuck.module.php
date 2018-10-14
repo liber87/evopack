@@ -56,7 +56,7 @@
 	}
 	
 	
-	if ($_POST['generate'])
+	if (isset($_POST['generate']))
 	{
 		$categories = array();
 		$res = $modx->db->query('Select * from '.$modx->getFullTableName('categories'));
@@ -94,7 +94,7 @@
 				fclose($fp);
 			}			
 		}	
-		if (count($_POST['snippets']))
+		if ((isset($_POST['snippets'])) && (count($_POST['snippets'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -123,7 +123,7 @@
 				fclose($fp);
 			}			
 		}		
-		if (count($_POST['tvs']))
+		if ((isset($_POST['tvs'])) (count($_POST['tvs'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -133,7 +133,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_tmplvars').' where id='.$idc);	
 				$tv = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/tvs/'.str2url($tv['name']).'.tpl', "w");	
+				$fp = fopen($folder.'install/assets/tvs/'.str2url($snippet['name']).'.tpl', "w");	
 				if (!$tv['description']) $tv['description']=$tv['name'];
 				$text = '/**'.PHP_EOL;
 				$text.=' * '.$tv['name'].PHP_EOL;
@@ -152,7 +152,7 @@
 				fclose($fp);
 			}			
 		}
-		if (count($_POST['templates']))
+		if ((isset($_POST['templates'])) && (count($_POST['templates'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -180,7 +180,7 @@
 				fclose($fp);
 			}			
 		}
-		if (count($_POST['modules']))
+		if ((isset($_POST['modules'])) && (count($_POST['modules'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -210,7 +210,7 @@
 				fclose($fp);
 			}			
 		}
-		if (count($_POST['plugins']))
+		if ((isset($_POST['plugins'])) && (count($_POST['plugins'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -244,57 +244,44 @@
 		
 		
 		$zip = new ZipArchive();		
-		
 		$zip_name = __DIR__.'/pucks/'.$name.'.zip'; 			
 		if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE)
 		{				
-			exit("* Sorry ZIP creation failed at this time");
+			echo "* Sorry ZIP creation failed at this time";
 		}
 		else
-		{
-			
-			if (count($_POST['files']))
-			{
-				$zips = array();
-				foreach($_POST['files'] as $s) 
-				{
-					if (!is_dir($s)) $zips[] = $s;
-					else
-					{
-						$t = getDirContents($s);
-						foreach($t as $a) $zips[] = $a;
-					}
-				}
-				foreach($zips as $f)
-				{
-					$f2 = str_replace(MODX_BASE_PATH,'',$f);
-					
-					if (is_dir($f)) 
-					{	
-						
-						$zip->addEmptyDir($f2);
-					}
-					else $zip->addFile($f, $f2);
-				}
-			}	
-			
+		{		
 			foreach(getDirContents($folder) as $sources)
 			{
-				$f1 = str_replace(__DIR__.'/'.$name,'',$sources);
-				if (is_dir($sources)) 
-				{
-					
-					$zip->addEmptyDir($f1);
-				}
-				else $zip->addFile($sources, $f1);
+				$name = str_replace(__DIR__,'',$sources);
+				if (is_dir($sources)) $zip->addEmptyDir($name);
+				else $zip->addFile($sources, $name);
 			}
 		}	
 		
 		
-		
+		if ((isset($_POST['files'])) && (count($_POST['files'])))
+		{
+			$files = array();
+			foreach($_POST['files'] as $s) 
+			{
+				if (!is_dir($s)) $files[] = $s;
+				else
+				{
+					$t = getDirContents($s);
+					foreach($t as $a) $files[] = $a;
+				}
+			}
+			foreach($files as $sources)
+			{
+				$name = str_replace(MODX_BASE_PATH,'',$sources);
+				if (is_dir($sources)) $zip->addEmptyDir($name);
+				else $zip->addFile($sources, $name);
+			}
+		}	
 		
 		$zip->close();		
-		exec("rm -R ".$folder);
+		exec("rm rm -R ".$folder);
 		
 	}
 	
@@ -361,7 +348,7 @@
 		
 		<meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width" />
 		<meta http-equiv="Content-Type" content="text/html; charset=<?=$modx->config['modx_charset'];?>" />
-		<link rel="stylesheet" type="text/css" href="<?=$modx->config['site_manager_url'];?>media/style/default/css/styles.min.css" />
+		<link rel="stylesheet" type="text/css" href="<?=$modx->config[site_manager_url];?>media/style/default/css/styles.min.css" />
 		<style>
 			.text-primary,td{font-size: 0.8125rem !important; cursor:ponter;}
 		</style>
@@ -397,7 +384,7 @@
 							{
 								foreach($fol as $as)
 								{
-									if (($as!='.') && ($as!='..') && ($as!='index.html'))
+									if (($as!='.') && ($as!='..'))
 									{
 										echo '<p><a href="./../assets/modules/evopuck/pucks/'.$as.'">'.$as.'</a></p>';
 									}
@@ -649,11 +636,11 @@
 								{
 									if (($as!='.') && ($as!='..')) $disr[] = $as;
 								}
-								else $files_web[] = $as;
+								else $files[] = $as;
 								
 							}
 							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+							foreach ($files as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
 							
 							
 						?>
