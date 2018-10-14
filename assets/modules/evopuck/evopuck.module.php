@@ -361,7 +361,7 @@
 		
 		<meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width" />
 		<meta http-equiv="Content-Type" content="text/html; charset=<?=$modx->config['modx_charset'];?>" />
-		<link rel="stylesheet" type="text/css" href="<?=$modx->config[site_manager_url];?>media/style/default/css/styles.min.css" />
+		<link rel="stylesheet" type="text/css" href="<?=$modx->config['site_manager_url'];?>media/style/default/css/styles.min.css" />
 		<style>
 			.text-primary,td{font-size: 0.8125rem !important; cursor:ponter;}
 		</style>
