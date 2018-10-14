@@ -397,7 +397,7 @@
 							{
 								foreach($fol as $as)
 								{
-									if (($as!='.') && ($as!='..'))
+									if (($as!='.') && ($as!='..') && ($as!='index.html'))
 									{
 										echo '<p><a href="./../assets/modules/evopuck/pucks/'.$as.'">'.$as.'</a></p>';
 									}
