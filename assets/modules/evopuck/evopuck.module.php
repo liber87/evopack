@@ -272,15 +272,15 @@
 					if (is_dir($f)) 
 					{	
 						
-						$zip->addEmptyDir($f2);
+						$zip->addEmptyDir('/'.$name.'/'.$f2);
 					}
-					else $zip->addFile($f, $f2);
+					else $zip->addFile($f, '/'.$name.'/'.$f2);
 				}
 			}	
 			
 			foreach(getDirContents($folder) as $sources)
 			{
-				$f1 = str_replace(__DIR__.'/'.$name,'',$sources);
+				$f1 = str_replace(__DIR__,'',$sources);
 				if (is_dir($sources)) 
 				{
 					
