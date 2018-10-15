@@ -1,41 +1,14 @@
 <?php
 	if(!defined('IN_MANAGER_MODE') || IN_MANAGER_MODE !== true){ die();}
-	function rus2translit($string) {
-		$converter = array(
-        'а' => 'a',   'б' => 'b',   'в' => 'v',
-        'г' => 'g',   'д' => 'd',   'е' => 'e',
-        'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
-        'и' => 'i',   'й' => 'y',   'к' => 'k',
-        'л' => 'l',   'м' => 'm',   'н' => 'n',
-        'о' => 'o',   'п' => 'p',   'р' => 'r',
-        'с' => 's',   'т' => 't',   'у' => 'u',
-        'ф' => 'f',   'х' => 'h',   'ц' => 'c',
-        'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
-        'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
-        'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
-		
-        'А' => 'A',   'Б' => 'B',   'В' => 'V',
-        'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
-        'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
-        'И' => 'I',   'Й' => 'Y',   'К' => 'K',
-        'Л' => 'L',   'М' => 'M',   'Н' => 'N',
-        'О' => 'O',   'П' => 'P',   'Р' => 'R',
-        'С' => 'S',   'Т' => 'T',   'У' => 'U',
-        'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
-        'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
-        'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
-        'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
-		);
-		return strtr($string, $converter);
+	
+	if (!class_exists('TransAlias')) {
+		require_once MODX_BASE_PATH.'assets/plugins/transalias/transalias.class.php';
 	}
-	function str2url($str) 
-	{		
-		$str = rus2translit($str);		
-		$str = strtolower($str);		
-		$str = preg_replace('~[^-a-z0-9_]+~u', '-', $str);		
-		$str = trim($str, "-");
-		return $str;
-	}
+	$trans = new TransAlias($modx);
+	$trans->loadTable('russian', 'Yes');
+	
+		 
+
 	
 	
 	
@@ -67,7 +40,7 @@
 		
 		$folder = __DIR__.'/'.$name.'/';
 		if(!is_dir($folder)) mkdir($folder);
-		if ((count($_POST['chunks'])) && (isset($_POST['chunks'])))
+		if ((isset($_POST['chunks'])) && (count($_POST['chunks'])))
 		{
 			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
 			if (!is_dir($folder.'install/assets/')) mkdir($folder.'install/assets/');
@@ -77,7 +50,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_htmlsnippets').' where id='.$idc);	
 				$chunk = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/chunks/'.str2url($chunk['name']).'.tpl', "w");		
+				$fp = fopen($folder.'install/assets/chunks/'.$trans->stripAlias($chunk['name'],'lowercase alphanumeric','dash').'.tpl', "w");		
 				if (!$chunk['description']) $chunk['description']=$chunk['name'];
 				$text = '/**'.PHP_EOL;
 				$text.=' * '.$chunk['name'].PHP_EOL;
@@ -104,7 +77,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_snippets').' where id='.$idc);	
 				$snippet = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/snippets/'.str2url($snippet['name']).'.tpl', "w");			
+				$fp = fopen($folder.'install/assets/snippets/'.$trans->stripAlias($snippet['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$snippet['description']) $snippet['description']=$snippet['name'];
 				$text = '//<?php'.PHP_EOL;
 				$text.= '/**'.PHP_EOL;
@@ -133,7 +106,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_tmplvars').' where id='.$idc);	
 				$tv = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/tvs/'.str2url($tv['name']).'.tpl', "w");	
+				$fp = fopen($folder.'install/assets/tvs/'.$trans->stripAlias($tv['name'],'lowercase alphanumeric','dash').'.tpl', "w");	
 				if (!$tv['description']) $tv['description']=$tv['name'];
 				$text = '/**'.PHP_EOL;
 				$text.=' * '.$tv['name'].PHP_EOL;
@@ -163,7 +136,7 @@
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_templates').' where id='.$idc);	
 				$templates = $modx->db->getRow($res);				
 				if(!$templates['description']) $templates['description']=$templates['templatename'];
-				$fp = fopen($folder.'install/assets/templates/'.str2url($templates['templatename']).'.tpl', "w");			
+				$fp = fopen($folder.'install/assets/templates/'.$trans->stripAlias($templates['templatename'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				$text = '/**'.PHP_EOL;
 				$text.=' * '.$templates['templatename'].PHP_EOL;
 				$text.=' *'.PHP_EOL;
@@ -173,7 +146,7 @@
 				$text.=' * @internal	@modx_category '.$categories[$templates['category']].PHP_EOL;
 				$text.=' * @internal	@installset base'.PHP_EOL;
 				$text.=' * @internal	@overwrite true'.PHP_EOL;
-				$text.=' * @internal	@save_sql_id_as '.str2url($templates['templatename']).'_SQL_ID'.PHP_EOL;
+				$text.=' * @internal	@save_sql_id_as '.$trans->stripAlias($templates['templatename'],'lowercase alphanumeric','dash').'_SQL_ID'.PHP_EOL;
 				$text.=' */'.PHP_EOL;
 				$text.=$templates['content'].PHP_EOL;				
 				fwrite($fp, $text);			
@@ -190,7 +163,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_modules').' where id='.$idc);	
 				$module = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/modules/'.str2url($module['name']).'.tpl', "w");			
+				$fp = fopen($folder.'install/assets/modules/'.$trans->stripAlias($module['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$module['description']) $module['description']=$module['name'];
 				$text = '/**'.PHP_EOL;
 				$text.=' * '.$module['name'].PHP_EOL;
@@ -220,7 +193,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_plugins').' where id='.$idc);	
 				$plugin = $modx->db->getRow($res);				
-				$fp = fopen($folder.'install/assets/plugins/'.str2url($plugin['name']).'.tpl', "w");			
+				$fp = fopen($folder.'install/assets/plugins/'.$trans->stripAlias($plugin['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$plugin['description']) $plugin['description']=$plugin['name'];
 				$text='//<?php'.PHP_EOL;
 				$text.='/**'.PHP_EOL;
