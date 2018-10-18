@@ -285,8 +285,7 @@
 		<title>Модуль создания установочных пакетов</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<script src="media/script/jquery/jquery.min.js" type="text/javascript"></script>
-		<script type="text/javascript" src="media/script/tabpane.js"></script>
-		<script type="text/javascript" src="./../assets/plugins/evocollection/js/module.js"></script>
+		<script type="text/javascript" src="media/script/tabpane.js"></script>		
 		<meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width" />
 		<meta http-equiv="Content-Type" content="text/html; charset=<?=$modx->config['modx_charset'];?>" />
 		<link rel="stylesheet" type="text/css" href="<?=$modx->config['site_manager_url'];?>media/style/default/css/styles.min.css" />
