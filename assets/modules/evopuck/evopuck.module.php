@@ -3,6 +3,19 @@
 	if (!class_exists('TransAlias')) {
 		require_once MODX_BASE_PATH.'assets/plugins/transalias/transalias.class.php';
 	}
+	
+	/* Langs */
+	global $_lang, $modx;
+	$module_path = str_replace('\\','/', dirname(__FILE__)) .'/';
+	include $module_path . 'lang/english.inc.php';
+	if ($language != 'english') {
+		$lang_file = $module_path . 'lang/' . $modx->config['manager_language'] . '.inc.php';
+		if (file_exists($lang_file)) {
+			include $lang_file;
+		}
+	}
+	
+	
 	$trans = new TransAlias($modx);
 	$trans->loadTable('russian', 'Yes');
     function getDirContents($dir, &$results = array()){
@@ -250,8 +263,8 @@
 			}
 			else $files[] = $as;
 		}
-		foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-		foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
 		exit();				
 	}
 	$heading_panel = '<div class="panel-heading">
@@ -282,7 +295,7 @@
 ?>
 <html>
 	<head>
-		<title>Модуль создания установочных пакетов</title>
+		<title><?=$_lang['evopuck_module_title'];?></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<script src="media/script/jquery/jquery.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="media/script/tabpane.js"></script>		
@@ -294,28 +307,28 @@
 		</style>
 	</head>
 	<body class="sectionBody">
-		<h1><i class="fa fa-th"></i>Создание установочных пакетов</h1>
+		<h1><i class="fa fa-th"></i><?=$_lang['evopuck_module_h1'];?></h1>
 		<form method="post" action="">
 			<div class="tab-pane " id="docManagerPane">
 				<script type="text/javascript">
 					tpResources = new WebFXTabPane(document.getElementById('docManagerPane'));
 				</script>
 				<div class="tab-page" id="tabGeneral">
-					<h2 class="tab"><i class="fa fa-home"></i> Основное</h2>
+					<h2 class="tab"><i class="fa fa-home"></i> <?=$_lang['evopuck_module_main'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabGeneral'));</script>
 					<div class="tab-body">
-						<h3>Создание пакета</h3>
-						<p id="el">Шаблоны - <b id="templates">0</b> ТВ-параметры - <b id="tvs">0</b> Чанки - <b id="chunks">0</b> Сниппеты - <b id="snippets">0</b> Плагины - <b id="plugins">0</b> Файлы - <b id="files">0</b></p>
+						<h3><?=$_lang['evopuck_module_build_package'];?></h3>
+						<p id="el"><?=$_lang['templates'];?> - <b id="templates">0</b> <?=$_lang['tmplvars'];?> - <b id="tvs">0</b> <?=$_lang['htmlsnippets'];?> - <b id="chunks">0</b> <?=$_lang['snippets'];?> - <b id="snippets">0</b> <?=$_lang['plugins'];?> - <b id="plugins">0</b> <?=$_lang['files_files'];?> - <b id="files">0</b></p>
 						<input type="hidden" name="generate" value="1">
 						<div style="position:relative;">
-							<input type="text" name="name" placeholder="Введите название пакета">
-							<input type="submit" value="Сформировать пакет" style="position: absolute;right: 0;top: 0; z-index:22;">
+							<input type="text" name="name" placeholder="<?=$_lang['evopuck_module_enter_package_name'];?>">
+							<input type="submit" value="<?=$_lang['evopuck_module_build_a_package'];?>" style="position: absolute;right: 0;top: 0; z-index:22;">
 						</div>
 						<hr>
-						<h3>Сформированные пакеты</h3>
+						<h3><?=$_lang['evopuck_module_formed_packages'];?></h3>
 						<?php
 							$fol = scandir(__DIR__.'/pucks/');
-							if (count($fol)==2) echo 'Сформированных пакетов нет.';
+							if (count($fol)==2) echo $_lang['evopuck_module_no_formated_package'];
 							else
 							{
 								foreach($fol as $as)
@@ -330,11 +343,11 @@
 					</div>
 				</div>
 				<div class="tab-page" id="tabTemplates">
-					<h2 class="tab"><i class="fa fa-newspaper-o"></i> Шаблоны</h2>
+					<h2 class="tab"><i class="fa fa-newspaper-o"></i> <?=$_lang['templates'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabTemplates'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
-							<p style="margin:1.25rem 0 0 1.25rem;">Пока только содержимое...(</p>
+							<p style="margin:1.25rem 0 0 1.25rem;"><?=$_lang['evopuck_module_devout_1'];?></p>
 							<?php
 								$res = $modx->db->query('SELECT '.$modx->getFullTableName('categories').'.`category`,'.$modx->getFullTableName('site_templates').'.`category` as cat FROM '.$modx->getFullTableName('site_templates').' 
 								left join '.$modx->getFullTableName('categories').'
@@ -362,7 +375,7 @@
 					</div>
 				</div>
 				<div class="tab-page" id="tabTemplateVariables">
-					<h2 class="tab"><i class="fa fa-list-alt"></i> TV-параметры</h2>
+					<h2 class="tab"><i class="fa fa-list-alt"></i> <?=$_lang['tmplvars'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabTemplateVariables'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
@@ -393,7 +406,7 @@
 					</div>
 				</div>			
 				<div class="tab-page" id="tabChunks">
-					<h2 class="tab"><i class="fa fa-th-large"></i> Чанки</h2>
+					<h2 class="tab"><i class="fa fa-th-large"></i> <?=$_lang['htmlsnippets'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabChunks'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
@@ -424,7 +437,7 @@
 					</div>
 				</div>	
 				<div class="tab-page" id="tabSnippets">
-					<h2 class="tab"><i class="fa fa-code"></i> Сниппеты</h2>
+					<h2 class="tab"><i class="fa fa-code"></i> <?=$_lang['snippets'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabSnippets'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
@@ -455,7 +468,7 @@
 					</div>
 				</div>	
 				<div class="tab-page" id="tabPlugins">
-					<h2 class="tab"><i class="fa fa-plug"></i> Плагины</h2>
+					<h2 class="tab"><i class="fa fa-plug"></i> <?=$_lang['plugins'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabPlugins'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
@@ -486,7 +499,7 @@
 					</div>
 				</div>	
 				<div class="tab-page" id="tabModules">
-					<h2 class="tab"><i class="fa fa-cubes"></i>  Модули</h2>
+					<h2 class="tab"><i class="fa fa-cubes"></i>  <?=$_lang['modules'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabModules'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
@@ -517,7 +530,7 @@
 					</div>
 				</div>	
 				<div class="tab-page" id="tabFiles">
-					<h2 class="tab"><i class="fa fa-file"></i> Файлы</h2>
+					<h2 class="tab"><i class="fa fa-file"></i> <?=$_lang['files_files'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabFiles'));</script>
 					<div class="tab-body">
 						<?php		
