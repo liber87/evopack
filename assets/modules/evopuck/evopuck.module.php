@@ -250,8 +250,8 @@
 			}
 			else $files[] = $as;
 		}
-		foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-		foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
 		exit();				
 	}
 	$heading_panel = '<div class="panel-heading">
