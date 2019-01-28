@@ -37,7 +37,7 @@
 		$res = $modx->db->query('Select * from '.$modx->getFullTableName('categories'));
 		while($row = $modx->db->getRow($res)) $categories[$row['id']] = $row['category'];
 		if ($_POST['name']) $name = $_POST['name'];
-		else $name = 'untitled_puck_'.time();
+		else $name = 'untitled_pack_'.time();
 		$folder = __DIR__.'/'.$name.'/';
 		if(!is_dir($folder)) mkdir($folder);
 		if ((isset($_POST['chunks'])) && (count($_POST['chunks'])))
