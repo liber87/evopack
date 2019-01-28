@@ -1,5 +1,5 @@
 /**
- * EvoPuck
+ * EvoPack
  *
  * Пакет для формирования установочных пакетов на основе текущего сайта
  *
@@ -11,4 +11,4 @@
  * @internal	@shareparams 1
  * @internal	@overwrite true
  */
-include_once(MODX_BASE_PATH.'assets/modules/evopuck/evopuck.module.php');
+include_once(MODX_BASE_PATH.'assets/modules/evopack/evopack.module.php');
