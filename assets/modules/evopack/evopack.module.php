@@ -208,7 +208,7 @@
 			}			
 		}
 		$zip = new ZipArchive();		
-		$zip_name = __DIR__.'/pucks/'.$name.'.zip'; 			
+		$zip_name = __DIR__.'/packs/'.$name.'.zip'; 			
 		if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE)
 		{				
 			exit("* Sorry ZIP creation failed at this time");
@@ -295,7 +295,7 @@
 ?>
 <html>
 	<head>
-		<title><?=$_lang['evopuck_module_title'];?></title>
+		<title><?=$_lang['evopack_module_title'];?></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<script src="media/script/jquery/jquery.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="media/script/tabpane.js"></script>		
@@ -307,35 +307,35 @@
 		</style>
 	</head>
 	<body class="sectionBody">
-		<h1><i class="fa fa-th"></i><?=$_lang['evopuck_module_h1'];?></h1>
+		<h1><i class="fa fa-th"></i><?=$_lang['evopack_module_h1'];?></h1>
 		<form method="post" action="">
 			<div class="tab-pane " id="docManagerPane">
 				<script type="text/javascript">
 					tpResources = new WebFXTabPane(document.getElementById('docManagerPane'));
 				</script>
 				<div class="tab-page" id="tabGeneral">
-					<h2 class="tab"><i class="fa fa-home"></i> <?=$_lang['evopuck_module_main'];?></h2>
+					<h2 class="tab"><i class="fa fa-home"></i> <?=$_lang['evopack_module_main'];?></h2>
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabGeneral'));</script>
 					<div class="tab-body">
-						<h3><?=$_lang['evopuck_module_build_package'];?></h3>
+						<h3><?=$_lang['evopack_module_build_package'];?></h3>
 						<p id="el"><?=$_lang['templates'];?> - <b id="templates">0</b> <?=$_lang['tmplvars'];?> - <b id="tvs">0</b> <?=$_lang['htmlsnippets'];?> - <b id="chunks">0</b> <?=$_lang['snippets'];?> - <b id="snippets">0</b> <?=$_lang['plugins'];?> - <b id="plugins">0</b> <?=$_lang['files_files'];?> - <b id="files">0</b></p>
 						<input type="hidden" name="generate" value="1">
 						<div style="position:relative;">
-							<input type="text" name="name" placeholder="<?=$_lang['evopuck_module_enter_package_name'];?>">
-							<input type="submit" value="<?=$_lang['evopuck_module_build_a_package'];?>" style="position: absolute;right: 0;top: 0; z-index:22;">
+							<input type="text" name="name" placeholder="<?=$_lang['evopack_module_enter_package_name'];?>">
+							<input type="submit" value="<?=$_lang['evopack_module_build_a_package'];?>" style="position: absolute;right: 0;top: 0; z-index:22;">
 						</div>
 						<hr>
-						<h3><?=$_lang['evopuck_module_formed_packages'];?></h3>
+						<h3><?=$_lang['evopack_module_formed_packages'];?></h3>
 						<?php
-							$fol = scandir(__DIR__.'/pucks/');
-							if (count($fol)==2) echo $_lang['evopuck_module_no_formated_package'];
+							$fol = scandir(__DIR__.'/packs/');
+							if (count($fol)==2) echo $_lang['evopack_module_no_formated_package'];
 							else
 							{
 								foreach($fol as $as)
 								{
 									if (($as!='.') && ($as!='..') && ($as!='index.html'))
 									{
-										echo '<p><a href="./../assets/modules/evopuck/pucks/'.$as.'">'.$as.'</a></p>';
+										echo '<p><a href="./../assets/modules/evopack/packs/'.$as.'">'.$as.'</a></p>';
 									}
 								}
 							}
@@ -347,7 +347,7 @@
 					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabTemplates'));</script>
 					<div class="panel-group">
 						<div class=" resourceTable">
-							<p style="margin:1.25rem 0 0 1.25rem;"><?=$_lang['evopuck_module_devout_1'];?></p>
+							<p style="margin:1.25rem 0 0 1.25rem;"><?=$_lang['evopack_module_devout_1'];?></p>
 							<?php
 								$res = $modx->db->query('SELECT '.$modx->getFullTableName('categories').'.`category`,'.$modx->getFullTableName('site_templates').'.`category` as cat FROM '.$modx->getFullTableName('site_templates').' 
 								left join '.$modx->getFullTableName('categories').'
