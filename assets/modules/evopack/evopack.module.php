@@ -264,7 +264,7 @@
 			else $files[] = $as;
 		}
 		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 		exit();				
 	}
 	$heading_panel = '<div class="panel-heading">
@@ -545,7 +545,7 @@
 								else $files_web[] = $as;
 							}
 							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 						?>
 					</div>
 				</div>
@@ -568,24 +568,32 @@
 				$('#files').html($('.files:checked').length);
 				$('#modules').html($('.modules:checked').length);
 			});
+			
 			$(document).on('click','.view_folder',function(){
-				if ($(this).parent().hasClass('opened'))
-				{
-					$(this).parent().removeClass('opened').next().remove();
-				}
-				else
-				{
-					$(this).parent().addClass('down');
-					$(this).parent().addClass('opened');
-					$.ajax({
-						type: "POST",
-						url: location.href,
-						data: { path: $(this).data('path')}
-					}).done(function(result)
-					{
-						$('.down').after('<div class="sub_catalog">'+result+'</div>');
-						$('.down').removeClass('down');
+				var $self = $(this), $parent = $self.parent();
+
+				if ($parent.hasClass('opened')) {
+					$parent.next().slideUp(200, function() {
+						$(this).prev().removeClass('opened');
 					});
+				} else {
+					var $subcatalog = $parent.next('.sub_catalog');
+
+					if ($subcatalog.length) {
+						$subcatalog.slideDown(200);
+						$parent.addClass('opened');
+					} else {
+						(function($parent) {
+							$parent.addClass('opened');
+							$.ajax({
+								type: "POST",
+								url: location.href,
+								data: { path: $self.data('path')}
+							}).done(function(result) {
+								$('<div class="sub_catalog" style="display: none;">'+result+'</div>').insertAfter($parent).slideDown(200);
+							});
+						})($parent);
+					}
 				}
 			});
 		</script>
