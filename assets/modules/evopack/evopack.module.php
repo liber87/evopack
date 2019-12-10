@@ -257,7 +257,7 @@
 		$path = scandir($assets);
 		foreach($path as $as)
 		{
-			if (is_dir($assets.$as.'/'))
+			if (is_dir($assets.$as))
 			{
 				if (($as!='.') && ($as!='..')) $disr[] = $as;
 			}
