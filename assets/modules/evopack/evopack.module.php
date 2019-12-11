@@ -263,7 +263,7 @@
 			}
 			else $files[] = $as;
 		}
-		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><label><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"></label> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
 		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 		exit();				
 	}
@@ -544,7 +544,7 @@
 								}
 								else $files_web[] = $as;
 							}
-							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><label><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"></label> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
 							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 						?>
 					</div>
@@ -557,6 +557,7 @@
 			#el b{padding-right:30px;}
 			.resourceTable ul.elements{margin:0 !important;}
 			.resourceTable .panel-title>a{    padding: 5px 2.25rem !important;}
+			#tabFiles .subchecked > label > input { background-color: rgba(0,0,0,0.15); border-color: #ccc; }
 		</style>
 		<script>
 			$(document).on('change','.form-check-input',function(){
@@ -595,6 +596,20 @@
 						})($parent);
 					}
 				}
+			});
+
+			$.fn.cascadeToggleParent = function(isChecked) {
+				return this.each(function() {
+					if (!isChecked) {
+						isChecked = $(this).children('p').children('label').children(':checked').length + $(this).children('.subchecked').length > 0;
+					}
+					$(this).prev('p').toggleClass('subchecked', isChecked);
+					$(this).parent('.sub_catalog').cascadeToggleParent(isChecked);
+				});
+			};
+
+			$(document).on('change', 'input[name="files[]"]', function() {
+				$(this).closest('.sub_catalog').cascadeToggleParent(false);
 			});
 		</script>
 	</body>
