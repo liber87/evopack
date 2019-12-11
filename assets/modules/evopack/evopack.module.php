@@ -3,6 +3,35 @@
 	if (!class_exists('TransAlias')) {
 		require_once MODX_BASE_PATH.'assets/plugins/transalias/transalias.class.php';
 	}
+
+	function convertParamsFromJson($params)
+    {
+        $json = json_decode($params, true);
+        if (is_array($json)) {
+            $params = [];
+            foreach ($json as $name => $parameter) {
+                $parameter = array_shift($parameter);
+                $row = '&' . $name . '=' . $parameter['label'] . ';' . $parameter['type'];
+
+                if (in_array($parameter['type'], ['menu', 'list', 'list-multi', 'checkbox', 'radio'])) {
+                    $row .= ';' . $parameter['options'];
+                }
+
+                if (!empty($_POST['package_opts']['save_property_values'])) {
+                    $row .= ';' . $parameter['value'];
+                } else {
+                	$row .= ';' . $parameter['default'];
+                }
+
+                if (!empty($parameter['desc'])) {
+                    $row .= ';' . $parameter['desc'];
+                }
+                $params[] = $row;
+            }
+            $params = implode(' ', $params);
+        }
+        return $params;
+    }
 	
 	/* Langs */
 	global $_lang, $modx;
@@ -74,7 +103,8 @@
 			foreach($_POST['snippets'] as $idc)
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_snippets').' where id='.$idc);	
-				$snippet = $modx->db->getRow($res);				
+				$snippet = $modx->db->getRow($res);		
+				$snippet['properties'] = convertParamsFromJson($snippet['properties']);
 				$fp = fopen($folder.'install/assets/snippets/'.$trans->stripAlias($snippet['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$snippet['description']) $snippet['description']=$snippet['name'];
 				$text = '//<?php'.PHP_EOL;
@@ -158,6 +188,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_modules').' where id='.$idc);	
 				$module = $modx->db->getRow($res);				
+				$module['properties'] = convertParamsFromJson($module['properties']);
 				$fp = fopen($folder.'install/assets/modules/'.$trans->stripAlias($module['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$module['description']) $module['description']=$module['name'];
 				$text = '/**'.PHP_EOL;
@@ -187,6 +218,7 @@
 			{	
 				$res = $modx->db->query('Select * from '.$modx->getFullTableName('site_plugins').' where id='.$idc);	
 				$plugin = $modx->db->getRow($res);				
+				$plugin['properties'] = convertParamsFromJson($plugin['properties']);
 				$fp = fopen($folder.'install/assets/plugins/'.$trans->stripAlias($plugin['name'],'lowercase alphanumeric','dash').'.tpl', "w");			
 				if (!$plugin['description']) $plugin['description']=$plugin['name'];
 				$text='//<?php'.PHP_EOL;
@@ -257,14 +289,14 @@
 		$path = scandir($assets);
 		foreach($path as $as)
 		{
-			if (is_dir($assets.$as.'/'))
+			if (is_dir($assets.$as))
 			{
 				if (($as!='.') && ($as!='..')) $disr[] = $as;
 			}
 			else $files[] = $as;
 		}
-		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files""> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+		if(is_array($disr)) foreach ($disr as $as) echo '<p style="margin-bottom:0;"><label><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"></label> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+		if(is_array($files)) foreach ($files as $as) echo '<p  style="margin-bottom:0;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files" value="'.$assets.$as.'"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 		exit();				
 	}
 	$heading_panel = '<div class="panel-heading">
@@ -320,6 +352,12 @@
 						<h3><?=$_lang['evopack_module_build_package'];?></h3>
 						<p id="el"><?=$_lang['templates'];?> - <b id="templates">0</b> <?=$_lang['tmplvars'];?> - <b id="tvs">0</b> <?=$_lang['htmlsnippets'];?> - <b id="chunks">0</b> <?=$_lang['snippets'];?> - <b id="snippets">0</b> <?=$_lang['plugins'];?> - <b id="plugins">0</b> <?=$_lang['files_files'];?> - <b id="files">0</b></p>
 						<input type="hidden" name="generate" value="1">
+						
+						<fieldset class="package-options">
+							<legend><?= $_lang['evopack_module_options'] ?></legend>
+							<p><label><input type="checkbox" name="package_opts[save_property_values]" value="1"><?= $_lang['evopack_module_save_property_values'] ?></label></p>
+						</fieldset>
+						
 						<div style="position:relative;">
 							<input type="text" name="name" placeholder="<?=$_lang['evopack_module_enter_package_name'];?>">
 							<input type="submit" value="<?=$_lang['evopack_module_build_a_package'];?>" style="position: absolute;right: 0;top: 0; z-index:22;">
@@ -538,14 +576,14 @@
 							$path = scandir($assets);
 							foreach($path as $as)
 							{
-								if (is_dir($assets.$as.'/'))
+								if (is_dir($assets.$as))
 								{
 									if (($as!='.') && ($as!='..')) $disr[] = $as;
 								}
 								else $files_web[] = $as;
 							}
-							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
-							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</p>';
+							foreach ($disr as $as) echo '<p style="margin-bottom:0;margin-left: 15px;"><label><input type="checkbox" name="files[]" value="'.$assets.$as.'/" class="form-check-input files"></label> <a href="javascript:void(0);" class="view_folder" data-path="'.$assets.$as.'/"><i class="fa fa-folder-o FilesFolder"></i> '.$as.'</a></p>';
+							foreach ($files_web as $as) echo '<p  style="margin-bottom:0;margin-left: 15px;"><label style="margin: 0; cursor: pointer;"><input type="checkbox" name="files[]" class="form-check-input files"> <i class="fa fa-file-o FilesPage"></i> '.$as.'</label></p>';
 						?>
 					</div>
 				</div>
@@ -557,6 +595,11 @@
 			#el b{padding-right:30px;}
 			.resourceTable ul.elements{margin:0 !important;}
 			.resourceTable .panel-title>a{    padding: 5px 2.25rem !important;}
+			#tabFiles .subchecked > label > input { background-color: rgba(0,0,0,0.15); border-color: #ccc; }
+			.sectionBody fieldset.package-options { margin: 0 0 1rem; padding-top: 0.375rem !important; }
+			.package-options legend { box-shadow: none; border: none; width: auto; background: none; margin: 0; }
+			.package-options label { margin: 0; }
+			.package-options > :last-child { margin-bottom: 0; }
 		</style>
 		<script>
 			$(document).on('change','.form-check-input',function(){
@@ -568,25 +611,47 @@
 				$('#files').html($('.files:checked').length);
 				$('#modules').html($('.modules:checked').length);
 			});
+			
 			$(document).on('click','.view_folder',function(){
-				if ($(this).parent().hasClass('opened'))
-				{
-					$(this).parent().removeClass('opened').next().remove();
-				}
-				else
-				{
-					$(this).parent().addClass('down');
-					$(this).parent().addClass('opened');
-					$.ajax({
-						type: "POST",
-						url: location.href,
-						data: { path: $(this).data('path')}
-					}).done(function(result)
-					{
-						$('.down').after('<div class="sub_catalog">'+result+'</div>');
-						$('.down').removeClass('down');
+				var $self = $(this), $parent = $self.parent();
+
+				if ($parent.hasClass('opened')) {
+					$parent.next().slideUp(200, function() {
+						$(this).prev().removeClass('opened');
 					});
+				} else {
+					var $subcatalog = $parent.next('.sub_catalog');
+
+					if ($subcatalog.length) {
+						$subcatalog.slideDown(200);
+						$parent.addClass('opened');
+					} else {
+						(function($parent) {
+							$parent.addClass('opened');
+							$.ajax({
+								type: "POST",
+								url: location.href,
+								data: { path: $self.data('path')}
+							}).done(function(result) {
+								$('<div class="sub_catalog" style="display: none;">'+result+'</div>').insertAfter($parent).slideDown(200);
+							});
+						})($parent);
+					}
 				}
+			});
+
+			$.fn.cascadeToggleParent = function(isChecked) {
+				return this.each(function() {
+					if (!isChecked) {
+						isChecked = $(this).children('p').children('label').children(':checked').length + $(this).children('.subchecked').length > 0;
+					}
+					$(this).prev('p').toggleClass('subchecked', isChecked);
+					$(this).parent('.sub_catalog').cascadeToggleParent(isChecked);
+				});
+			};
+
+			$(document).on('change', 'input[name="files[]"]', function() {
+				$(this).closest('.sub_catalog').cascadeToggleParent(false);
 			});
 		</script>
 	</body>
