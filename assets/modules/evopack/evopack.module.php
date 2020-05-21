@@ -3,7 +3,7 @@
 	if (!class_exists('TransAlias')) {
 		require_once MODX_BASE_PATH.'assets/plugins/transalias/transalias.class.php';
 	}
-
+	
 	function convertParamsFromJson($params)
     {
         $json = json_decode($params, true);
@@ -12,26 +12,26 @@
             foreach ($json as $name => $parameter) {
                 $parameter = array_shift($parameter);
                 $row = '&' . $name . '=' . $parameter['label'] . ';' . $parameter['type'];
-
+				
                 if (in_array($parameter['type'], ['menu', 'list', 'list-multi', 'checkbox', 'radio'])) {
                     $row .= ';' . $parameter['options'];
-                }
-
+				}
+				
                 if (!empty($_POST['package_opts']['save_property_values'])) {
                     $row .= ';' . $parameter['value'];
-                } else {
+					} else {
                 	$row .= ';' . $parameter['default'];
-                }
-
+				}
+				
                 if (!empty($parameter['desc'])) {
                     $row .= ';' . $parameter['desc'];
-                }
+				}
                 $params[] = $row;
-            }
+			}
             $params = implode(' ', $params);
-        }
+		}
         return $params;
-    }
+	}
 	
 	/* Langs */
 	global $_lang, $modx;
@@ -239,6 +239,19 @@
 				fclose($fp);
 			}			
 		}
+		if ((isset($_POST['tables'])) && (count($_POST['tables'])))
+		{
+			if (!is_dir($folder.'install/')) mkdir($folder.'install/');
+			include_once(MODX_BASE_PATH."assets/modules/evopack/classes/dumper.php");		
+			$db = $modx->db->config['dbase'];
+			$dbase = trim($db, '`');			
+			$dumper = new Mysqldumper($dbase,$folder.'install/');
+			$dumper->setDBtables($_POST['tables']);
+			$dumper->setDroptables(true);
+			$dumpfinished = $dumper->createDump('snapshot');
+			
+		}
+		
 		$zip = new ZipArchive();		
 		$zip_name = __DIR__.'/packs/'.$name.'.zip'; 			
 		if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE)
@@ -281,7 +294,7 @@
 			}
 		}	
 		$zip->close();		
-		exec("rm -R ".$folder);
+		exec("rm -R ".$folder);	
 	}
 	if (isset($_POST['path']))
 	{	
@@ -587,6 +600,84 @@
 						?>
 					</div>
 				</div>
+				<div class="tab-page" id="tabTables">
+					<h2 class="tab"><i class="fa fa-newspaper-o"></i> <?=$_lang['evopack_module_tables'];?></h2>
+					<script type="text/javascript">tpResources.addTabPage(document.getElementById('tabTables'));</script>
+					<div class="tab-body">
+						<div class="row">						
+							<div class="table-responsive">
+								<table class="table data nowrap">
+									<thead>
+										<tr>
+											<td><label class="form-check-label"><input type="checkbox" name="chkselall" class="form-check-input" onclick="selectAll();" title="Select All Tables" /> <?= $_lang['database_table_tablename'] ?></label></td>
+											<td width="1%"></td>
+											<td class="text-xs-center"><?= $_lang['database_table_records'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_collation'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_table_datasize'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_table_overhead'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_table_effectivesize'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_table_indexsize'] ?></td>
+											<td class="text-xs-center"><?= $_lang['database_table_totalsize'] ?></td>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+											
+											$dbase = $modx->db->config['dbase'];
+											$dbase = trim($dbase, '`');
+											$sql = "SHOW TABLE STATUS FROM `{$dbase}` LIKE '" . $modx->db->escape($modx->db->config['table_prefix']) . "%'";
+											$rs = $modx->db->query($sql);
+											$i = 0;
+											while ($db_status = $modx->db->getRow($rs)) {
+												if (isset($tables)) {
+													$table_string = implode(',', $table);
+													} else {
+													$table_string = '';
+												}
+												
+												echo '<tr>' . "\n" . '<td><label class="form-check form-check-label"><input type="checkbox" name="tables[]" class="form-check-input" value="' . $db_status['Name'] . '"' . (strstr($table_string, $db_status['Name']) === false ? '' : ' checked="checked"') . ' /><b class="text-primary">' . $db_status['Name'] . '</b></label></td>' . "\n";
+												echo '<td class="text-xs-center">' . (!empty($db_status['Comment']) ? '<i class="' . $_style['actions_help'] . '" data-tooltip="' . $db_status['Comment'] . '"></i>' : '') . '</td>' . "\n";
+												echo '<td class="text-xs-right">' . $db_status['Rows'] . '</td>' . "\n";
+												echo '<td class="text-xs-right">' . $db_status['Collation'] . '</td>' . "\n";
+												
+												// Enable record deletion for certain tables (TRUNCATE TABLE) if they're not already empty
+												$truncateable = array(
+												$modx->db->config['table_prefix'] . 'event_log',
+												$modx->db->config['table_prefix'] . 'manager_log',
+												);
+												if ($modx->hasPermission('settings') && in_array($db_status['Name'], $truncateable) && $db_status['Rows'] > 0) {
+													echo '<td class="text-xs-right"><a class="text-danger" href="index.php?a=54&mode=' . $action . '&u=' . $db_status['Name'] . '" title="' . $_lang['truncate_table'] . '">' . $modx->nicesize($db_status['Data_length'] + $db_status['Data_free']) . '</a>' . '</td>' . "\n";
+													} else {
+													echo '<td class="text-xs-right">' . $modx->nicesize($db_status['Data_length'] + $db_status['Data_free']) . '</td>' . "\n";
+												}
+												
+												if ($modx->hasPermission('settings')) {
+													echo '<td class="text-xs-right">' . ($db_status['Data_free'] > 0 ? '<a class="text-danger" href="index.php?a=54&mode=' . $action . '&t=' . $db_status['Name'] . '" title="' . $_lang['optimize_table'] . '">' . $modx->nicesize($db_status['Data_free']) . '</a>' : '-') . '</td>' . "\n";
+													} else {
+													echo '<td class="text-xs-right">' . ($db_status['Data_free'] > 0 ? $modx->nicesize($db_status['Data_free']) : '-') . '</td>' . "\n";
+												}
+												
+												echo '<td class="text-xs-right">' . $modx->nicesize($db_status['Data_length'] - $db_status['Data_free']) . '</td>' . "\n" . '<td class="text-xs-right">' . $modx->nicesize($db_status['Index_length']) . '</td>' . "\n" . '<td class="text-xs-right">' . $modx->nicesize($db_status['Index_length'] + $db_status['Data_length'] + $db_status['Data_free']) . '</td>' . "\n" . "</tr>";
+												
+												$total = $total + $db_status['Index_length'] + $db_status['Data_length'];
+												$totaloverhead = $totaloverhead + $db_status['Data_free'];
+											}
+										?>
+									</tbody>
+									<tfoot>
+										<tr>
+											<td class="text-xs-right"><?= $_lang['database_table_totals'] ?></td>
+											<td colspan="4">&nbsp;</td>
+											<td class="text-xs-right"><?= $totaloverhead > 0 ? '<b class="text-danger">' . $modx->nicesize($totaloverhead) . '</b><br />(' . number_format($totaloverhead) . ' B)' : '-' ?></td>
+											<td colspan="2">&nbsp;</td>
+											<td class="text-xs-right"><?= "<b>" . $modx->nicesize($total) . "</b><br />(" . number_format($total) . " B)" ?></td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</form>
 		<style>
@@ -614,32 +705,32 @@
 			
 			$(document).on('click','.view_folder',function(){
 				var $self = $(this), $parent = $self.parent();
-
+				
 				if ($parent.hasClass('opened')) {
 					$parent.next().slideUp(200, function() {
 						$(this).prev().removeClass('opened');
 					});
-				} else {
+					} else {
 					var $subcatalog = $parent.next('.sub_catalog');
-
+					
 					if ($subcatalog.length) {
 						$subcatalog.slideDown(200);
 						$parent.addClass('opened');
-					} else {
+						} else {
 						(function($parent) {
 							$parent.addClass('opened');
 							$.ajax({
 								type: "POST",
 								url: location.href,
 								data: { path: $self.data('path')}
-							}).done(function(result) {
+								}).done(function(result) {
 								$('<div class="sub_catalog" style="display: none;">'+result+'</div>').insertAfter($parent).slideDown(200);
 							});
 						})($parent);
 					}
 				}
 			});
-
+			
 			$.fn.cascadeToggleParent = function(isChecked) {
 				return this.each(function() {
 					if (!isChecked) {
@@ -649,7 +740,7 @@
 					$(this).parent('.sub_catalog').cascadeToggleParent(isChecked);
 				});
 			};
-
+			
 			$(document).on('change', 'input[name="files[]"]', function() {
 				$(this).closest('.sub_catalog').cascadeToggleParent(false);
 			});
