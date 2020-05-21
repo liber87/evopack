@@ -121,6 +121,7 @@ class Mysqldumper
                     continue;
                 }
             }
+			
             $output .= "{$lf}{$lf}# --------------------------------------------------------{$lf}{$lf}";
             $output .= "#{$lf}# Table structure for table `{$tblval}`{$lf}";
             $output .= "#{$lf}{$lf}";
@@ -167,9 +168,16 @@ class Mysqldumper
         if (!empty($output)) {
             unlink($tempfile_path);
         }
+		
+		foreach ($tables as $tblval) 
+		{
+			$tblClear = str_replace($modx->db->config['table_prefix'],'{PREFIX}',$tblval);			
+			$output = str_replace($tblval,$tblClear,$output);
+		}
+				
 		$folder = $this->folder;		
 		if (!is_dir($folder)) mkdir($folder);
-		$fp = fopen($folder.'setup.sql', "w");
+		$fp = fopen($folder.'setup.data.sql', "w");
 		fwrite($fp, $output);	
 		fclose($fp);
 		
